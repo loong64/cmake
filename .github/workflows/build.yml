@@ -93,13 +93,14 @@ jobs:
       - name: Check Binaries
         if: env.build == 1
         run: |
+          mkdir -p dist
           docker run --rm \
             -v $(pwd)/dist:/dist \
             ghcr.io/${{ github.repository_owner }}/kitware/cmake:${version} \
             bash -c 'cp -f /out/* /dist/'
 
           cd dist
-          sha256 sha256sum-* > cmake-${version/v/}-SHA-256.txt
+          sha256sum cmake-* > cmake-${version/v/}-SHA-256.txt
 
       - name: Create Release
         if: env.build == 1
