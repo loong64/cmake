@@ -1,4 +1,4 @@
-name: build(cmake)
+name: Linux (Custom)
 
 on:
   workflow_dispatch:
@@ -13,8 +13,6 @@ on:
         required: true
         type: string
         default: 'true'
-  schedule:
-    - cron: '0 20 * * *'
 
 env:
   app_name: 'cmake'
@@ -25,7 +23,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       app_version: ${{ steps.get-version.outputs.app_version }}
-      app_build: ${{ steps.check-release.outputs.app_build }}
     steps:
       - uses: actions/checkout@v5
 
@@ -48,15 +45,7 @@ jobs:
           echo "========== Build Args =========="
           echo "app_version=${app_version}"
 
-      - name: Check Release
-        id: check-release
-        run: |
-          gh release view ${app_version} -R ${{ github.repository }} | grep ${{ env.app_name }}-.*-linux-loongarch64.tar.gz >/dev/null 2>&1 || echo "app_build=1" >> $GITHUB_OUTPUT
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   build:
-    if: needs.check.outputs.app_build == '1'
     runs-on: ${{ matrix.runner }}
     needs: check
     env:
@@ -85,9 +74,14 @@ jobs:
             runner: ubuntu-24.04
 
     steps:
+      - name: Get Version
+        run: |
+          echo "app_version=${app_version}"
+
       - uses: actions/checkout@v5
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
+
       - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
@@ -116,15 +110,15 @@ jobs:
           path: dist
 
   release:
-    if: needs.check.outputs.app_build == '1'
-    runs-on: ubuntu-24.04
     needs:
       - check
       - build
     env:
       app_version: ${{ needs.check.outputs.app_version }}
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - name: Get source
+        uses: actions/checkout@v5
 
       - name: Download release
         uses: actions/download-artifact@v5
@@ -133,18 +127,16 @@ jobs:
           path: dist
           merge-multiple: true
 
-      - name: Check binaries
+      - name: Check Binaries
         run: |
           cd dist
           sha256sum cmake-* > cmake-${version/v/}-SHA-256.txt
           ls -al
 
-      - name: Create release
+      - name: Create GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG_NAME="${{ env.app_version }}"
-          gh release create "${TAG_NAME}" \
-            --generate-notes \
-            --title "${TAG_NAME}" \
-            dist/*
+          gh release view ${TAG_NAME} -R ${{ github.repository }} >/dev/null 2>&1 || gh release create "${TAG_NAME}" --generate-notes --title "${TAG_NAME}"
+          gh release upload ${TAG_NAME} -R ${{ github.repository }} dist/* --clobber
