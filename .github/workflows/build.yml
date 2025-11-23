@@ -136,7 +136,7 @@ jobs:
       - name: Check binaries
         run: |
           cd dist
-          sha256sum cmake-* > cmake-${version/v/}-SHA-256.txt
+          sha256sum cmake-* > cmake-${app_version/v/}-SHA-256.txt
           ls -al
 
       - name: Create release

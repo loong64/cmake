@@ -70,6 +70,8 @@ jobs:
           context: Utilities/Release/linux/${{ matrix.platform }}/base
           platforms: linux/${{ matrix.arch }}
           push: true
+          build-args: |
+            RUNNER_ARCH
           tags: |
             ghcr.io/${{ github.repository_owner }}/kitware/cmake:build-linux-${{ matrix.platform }}-base
           outputs: type=image,oci-mediatypes=true,compression=zstd,compression-level=3,force-compression=true
