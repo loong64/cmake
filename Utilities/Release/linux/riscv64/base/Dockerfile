@@ -15,6 +15,7 @@ RUN : \
         fontconfig-devel \
         freetype-devel \
         git \
+        libatomic-static \
         libstdc++-static \
         libX11-devel \
         libxcb-devel \
