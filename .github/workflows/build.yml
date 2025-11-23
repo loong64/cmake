@@ -11,11 +11,8 @@ on:
       run_test:
         description: 'Run Test ?'
         required: true
-        type: choice
+        type: string
         default: 'true'
-        options:
-          - true
-          - false
 
   schedule:
     - cron: '0 20 * * *'

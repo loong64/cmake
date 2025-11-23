@@ -11,24 +11,41 @@ on:
       - synchronize
       - reopened
     paths:
-      - 'Utilities/Release/linux/loongarch64/base/**'
-      - 'Utilities/Release/linux/loongarch64/deps/**'
+      - 'Utilities/Release/linux/**/base/**'
+      - 'Utilities/Release/linux/**/deps/**'
   push:
     branches:
       - master
     paths:
-      - 'Utilities/Release/linux/loongarch64/base/**'
-      - 'Utilities/Release/linux/loongarch64/deps/**'
+      - 'Utilities/Release/linux/**/base/**'
+      - 'Utilities/Release/linux/**/deps/**'
   workflow_dispatch:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ 'ubuntu-24.04' ]
-        scope: [ 'base', 'deps' ]
+        include:
+          - arch: amd64
+            platform: x86_64
+            runner: ubuntu-24.04
+          - arch: arm64
+            platform: aarch64
+            runner: ubuntu-24.04-arm
+          - arch: loong64
+            platform: loongarch64
+            runner: ubuntu-24.04
+          - arch: ppc64le
+            platform: ppc64le
+            runner: ubuntu-24.04
+          - arch: riscv64
+            platform: riscv64
+            runner: ubuntu-24.04
+          - arch: s390x
+            platform: s390x
+            runner: ubuntu-24.04
 
     steps:
       - name: Checkout code
@@ -47,14 +64,26 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and Push image
+      - name: Build and Push base image
         uses: docker/build-push-action@v6
         with:
-          context: Utilities/Release/linux/loongarch64/${{ matrix.scope }}
-          platforms: linux/loong64
+          context: Utilities/Release/linux/${{ matrix.platform }}/base
+          platforms: linux/${{ matrix.arch }}
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/kitware/cmake:build-linux-loongarch64-${{ matrix.scope }}
+            ghcr.io/${{ github.repository_owner }}/kitware/cmake:build-linux-${{ matrix.platform }}-base
           outputs: type=image,oci-mediatypes=true,compression=zstd,compression-level=3,force-compression=true
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=ghcr.io/${{ github.repository_owner }}/kitware/cmake:build-linux-${{ matrix.platform }}-base-buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/kitware/cmake:build-linux-${{ matrix.platform }}-base-buildcache,mode=max
+
+      - name: Build and Push deps image
+        uses: docker/build-push-action@v6
+        with:
+          context: Utilities/Release/linux/${{ matrix.platform }}/deps
+          platforms: linux/${{ matrix.arch }}
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/kitware/cmake:build-linux-${{ matrix.platform }}-deps
+          outputs: type=image,oci-mediatypes=true,compression=zstd,compression-level=3,force-compression=true
+          cache-from: type=ghcr.io/${{ github.repository_owner }}/kitware/cmake:build-linux-${{ matrix.platform }}-deps-buildcache
+          cache-to: type=registry,ref=ghcr.io/${{ github.repository_owner }}/kitware/cmake:build-linux-${{ matrix.platform }}-deps-buildcache,mode=max
