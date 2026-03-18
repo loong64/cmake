@@ -20,11 +20,11 @@ env:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     outputs:
       app_version: ${{ steps.get-version.outputs.app_version }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Get Version
         id: get-version
@@ -78,12 +78,12 @@ jobs:
         run: |
           echo "app_version=${app_version}"
 
-      - uses: actions/checkout@v5
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
+      - uses: actions/checkout@v6
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
 
       - name: Build Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: Utilities/Release/linux/${{ matrix.platform }}
           platforms: linux/${{ matrix.arch }}
@@ -118,7 +118,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Get source
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Download release
         uses: actions/download-artifact@v5

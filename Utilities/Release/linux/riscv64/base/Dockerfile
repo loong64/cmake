@@ -4,7 +4,7 @@
 # Produce a base image with a build environment for portable CMake binaries.
 # Build using the directory containing this file as its own build context.
 
-FROM ghcr.io/loong64/anolis:23
+FROM ghcr.io/loong64/anolis:23.3-default
 
 RUN : \
  && yum install --allowerasing -y \

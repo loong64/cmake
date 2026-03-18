@@ -38,10 +38,10 @@ COPY openssl-source.patch /opt/openssl/src/
 RUN : \
  && mkdir -p /opt/openssl/src \
  && cd /opt/openssl/src \
- && curl -LO https://github.com/openssl/openssl/releases/download/OpenSSL_1_1_1f/openssl-1.1.1f.tar.gz \
- && sha512sum openssl-1.1.1f.tar.gz | grep -q b00bd9b5ad5298fbceeec6bb19c1ab0c106ca5cfb31178497c58bf7e0e0cf30fcc19c20f84e23af31cc126bf2447d3e4f8461db97bafa7bd78f69561932f000c \
- && tar xzf openssl-1.1.1f.tar.gz \
- && cd openssl-1.1.1f \
+ && curl -OL https://github.com/openssl/openssl/releases/download/openssl-3.6.0/openssl-3.6.0.tar.gz \
+ && sha256sum openssl-3.6.0.tar.gz | grep -q b6a5f44b7eb69e3fa35dbf15524405b44837a481d43d81daddde3ff21fcbb8e9 \
+ && tar xzf openssl-3.6.0.tar.gz \
+ && cd openssl-3.6.0 \
  && patch -p1 -i ../openssl-source.patch \
  && ./Configure --prefix=/opt/openssl linux-elf no-asm no-shared -D_POSIX_C_SOURCE=199506L -D_POSIX_SOURCE=1 -D_SVID_SOURCE=1 -D_BSD_SOURCE=1 \
  && make install_dev -j $(nproc) \
