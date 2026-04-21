@@ -80,9 +80,9 @@ jobs:
           - arch: riscv64
             platform: riscv64
             runner: ubuntu-24.04
-          - arch: s390x
-            platform: s390x
-            runner: ubuntu-24.04
+          # - arch: s390x
+          #   platform: s390x
+          #   runner: ubuntu-24.04
 
     steps:
       - uses: actions/checkout@v6
